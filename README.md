@@ -26,7 +26,27 @@ définir `JAVA_HOME` (JDK 21) et `ANDROID_HOME` (SDK Android).
 ./build-local.sh
 ```
 
-L’APK release optimisé est produit dans `app/build/outputs/apk/release/app-release.apk`.
-La première compilation crée une clé de signature locale dans
-`~/.android/blackbg-release/`. Sauvegarder ce dossier en lieu sûr :
-Android exige la même clé pour mettre à jour une installation existante.
+Cette commande exige la clé officielle (`release.p12`, alias `blackbg`) et son
+fichier `password` dans `~/.android/blackbg-release/`. Elle vérifie l’empreinte
+SHA-256 du certificat publié
+(`d7f02e4701a55950eba482d631b4df25d9fd8100c21f18f99e8897f1aab2ec5e`),
+puis la signature de `app/build/outputs/apk/release/app-release.apk`.
+
+Pour signer avec votre propre clé :
+
+```sh
+./build-local.sh --personal
+```
+
+Ce mode crée `~/.android/blackbg-personal/` avec des permissions privées au
+premier lancement, puis réutilise sa clé. Sauvegardez le dossier en lieu sûr :
+si un fichier manque, restaurez la paire `release.p12` et `password` à partir
+de la même sauvegarde. L’APK personnel vérifié se trouve dans
+`app/build/personal/outputs/apk/release/app-release.apk`.
+
+Si une ancienne version du script a créé **votre clé personnelle** dans
+`~/.android/blackbg-release/`, migrez-la **avant** le premier `--personal` :
+avec `umask 077`, créez `~/.android/blackbg-personal/` et copiez-y les deux
+fichiers personnels, sans écraser de clé existante. Les deux modes conservent
+l’identifiant `app.blackbg` : Android accepte une mise à jour avec la même clé,
+mais exige de désinstaller l’application avant de passer à une autre signature.

@@ -1,5 +1,10 @@
 plugins { id("com.android.application") version "9.0.1" }
 
+val signingMode = providers.environmentVariable("BLACKBG_SIGNING_MODE").orNull
+if (signingMode == "personal") {
+    layout.buildDirectory.set(layout.projectDirectory.dir("build/personal"))
+}
+
 android {
     namespace = "app.blackbg"
     ndkVersion = "28.2.13676358"
@@ -19,10 +24,11 @@ android {
         }
     }
     signingConfigs {
-        create("localRelease") {
-            val directory = file("${System.getProperty("user.home")}/.android/blackbg-release")
+        if (signingMode != null) create("localRelease") {
+            require(signingMode in setOf("release", "personal"))
+            val directory = file("${providers.environmentVariable("HOME").get()}/.android/blackbg-$signingMode")
             storeFile = directory.resolve("release.p12")
-            val password = directory.resolve("password").takeIf { it.isFile }?.readText()?.trim()
+            val password = directory.resolve("password").readText().trim()
             storePassword = password
             keyAlias = "blackbg"
             keyPassword = password
@@ -33,7 +39,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            signingConfig = signingConfigs.getByName("localRelease")
+            signingConfig = signingConfigs.findByName("localRelease")
         }
     }
 }
