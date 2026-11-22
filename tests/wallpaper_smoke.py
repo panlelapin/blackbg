@@ -28,8 +28,15 @@ class WallpaperSmoke(unittest.TestCase):
             ("Cancel", "cancel", "finish()"),
         ]:
             self.assertIn(f'addChoice("{label}", R.drawable.ic_{icon}) {{ {action} }}', code)
-        self.assertIn("Gravity.START or Gravity.CENTER_VERTICAL", code)
         self.assertIn("Couldn’t apply wallpaper.", code)
+
+    def test_choice_block_centers_while_rows_stay_start_aligned(self):
+        code = (MAIN / "java/app/blackbg/Preview.kt").read_text()
+        self.assertRegex(code, r"root\.addView\(controls, FrameLayout\.LayoutParams\(\s*"
+                         r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*"
+                         r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*Gravity\.CENTER,?\s*\)\)")
+        self.assertIn("setContentView(root)", code)
+        self.assertIn("gravity = Gravity.START or Gravity.CENTER_VERTICAL", code)
 
     def test_vector_disks_and_glyphs(self):
         for name in ("wallpaper", "lockscreen", "homescreen", "both", "cancel"):

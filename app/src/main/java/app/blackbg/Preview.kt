@@ -9,6 +9,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
 
@@ -21,9 +22,7 @@ class Preview : Activity() {
         super.onCreate(savedInstanceState)
         fun dp(value: Int): Int = (value * resources.displayMetrics.density + 0.5f).toInt()
 
-        val controls = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        val root = FrameLayout(this).apply {
             setBackgroundColor(Color.BLACK)
             setOnApplyWindowInsetsListener { view, insets ->
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())
@@ -31,6 +30,14 @@ class Preview : Activity() {
                 insets
             }
         }
+        val controls = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        root.addView(controls, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.CENTER,
+        ))
         val choices = mutableListOf<Button>()
         fun addChoice(label: String, icon: Int, action: () -> Unit) {
             val choice = Button(this, null, android.R.attr.borderlessButtonStyle).apply {
@@ -78,6 +85,6 @@ class Preview : Activity() {
         addChoice("Homescreen", R.drawable.ic_homescreen) { applyWallpaper(WallpaperManager.FLAG_SYSTEM) }
         addChoice("Both", R.drawable.ic_both) { applyWallpaper(WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK) }
         addChoice("Cancel", R.drawable.ic_cancel) { finish() }
-        setContentView(controls)
+        setContentView(root)
     }
 }
