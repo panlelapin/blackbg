@@ -44,6 +44,12 @@ si un fichier manque, restaurez la paire `release.p12` et `password` à partir
 de la même sauvegarde. L’APK personnel vérifié se trouve dans
 `app/build/personal/outputs/apk/release/app-release.apk`.
 
+Dans les deux modes, le dossier de signature et les deux fichiers doivent
+vous appartenir et n’être accessibles qu’à vous (par exemple `700` pour le
+dossier, `600` pour les fichiers, sans ACL supplémentaire sur macOS).
+Le mode personnel refuse le certificat officiel. Pour exécuter aussi Lint,
+ajoutez `:app:lintRelease` à la commande ; c’est le seul argument Gradle admis.
+
 Si une ancienne version du script a créé **votre clé personnelle** dans
 `~/.android/blackbg-release/`, migrez-la **avant** le premier `--personal` :
 avec `umask 077`, créez `~/.android/blackbg-personal/` et copiez-y les deux

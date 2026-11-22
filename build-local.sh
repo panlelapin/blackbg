@@ -13,6 +13,22 @@ if [ "${1:-}" = --personal ]; then
     BLACKBG_SIGNING_MODE=personal
     output=app/build/personal
 fi
+[ "$#" -eq 0 ] || { [ "$#" -eq 1 ] && [ "$1" = :app:lintRelease ]; } ||
+    die "Usage: $0 [--personal] [:app:lintRelease]"
+
+owner=$(id -u)
+os=$(uname -s)
+require_private() {
+    message="Signing requires private permissions on $1 (owner only)."
+    private=$(find "$1" -prune ! -type l -user "$owner" \
+        \( -perm 0400 -o -perm 0500 -o -perm 0600 -o -perm 0700 \) -print)
+    [ "$private" = "$1" ] || die "$message"
+    if [ "$os" = Darwin ]; then
+        # macOS ACLs can grant access beyond the mode bits; each has an extra listing line.
+        [ "$(LC_ALL=C ls -lde "$1" | wc -l)" -eq 1 ] || die "$message"
+    fi
+}
+
 keys="$HOME/.android/blackbg-$BLACKBG_SIGNING_MODE"
 if [ "$BLACKBG_SIGNING_MODE" = personal ] && [ ! -e "$keys" ]; then
     (
@@ -20,6 +36,7 @@ if [ "$BLACKBG_SIGNING_MODE" = personal ] && [ ! -e "$keys" ]; then
         mkdir -p "$HOME/.android"
         # Only the process that creates the directory may initialize it.
         mkdir "$keys"
+        require_private "$keys"
         openssl rand -hex 32 > "$keys/password"
         "$JAVA_HOME/bin/keytool" -genkeypair -keystore "$keys/release.p12" \
             -storetype PKCS12 -storepass:file "$keys/password" -alias blackbg \
@@ -29,6 +46,9 @@ fi
 [ -f "$keys/password" ] && [ -s "$keys/password" ] &&
     [ -f "$keys/release.p12" ] && [ -s "$keys/release.p12" ] ||
     die "Missing signing credentials in $keys; restore release.p12 and password from backup."
+for path in "$keys" "$keys/password" "$keys/release.p12"; do
+    require_private "$path"
+done
 
 cert=$("$JAVA_HOME/bin/keytool" -exportcert -rfc -keystore "$keys/release.p12" \
     -storetype PKCS12 -storepass:file "$keys/password" -alias blackbg)
@@ -36,6 +56,9 @@ fingerprint=$(echo "$cert" | openssl x509 -noout -fingerprint -sha256)
 expected=$(echo "${fingerprint#*=}" | tr -d ':' | tr A-F a-f)
 if [ "$BLACKBG_SIGNING_MODE" = release ] && [ "$expected" != "$official" ]; then
     die "Signing certificate in $keys does not match the published BlackBG release."
+fi
+if [ "$BLACKBG_SIGNING_MODE" = personal ] && [ "$expected" = "$official" ]; then
+    die "Cannot use the official certificate for a personal build."
 fi
 
 ./gradlew :app:assembleRelease "$@"
