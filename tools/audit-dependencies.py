@@ -31,6 +31,8 @@ for scope in ("build", "runtime"):
         sys.exit("Incomplete OSV response.")
     hits = 0
     for coord, result in zip(coords, results):
+        if result.get("next_page_token"):
+            sys.exit(f"Incomplete OSV response for {scope} {coord}: more pages available.")
         ids = [item["id"] for item in result.get("vulns", [])]
         print(scope, coord, ", ".join(ids) if ids else "OK")
         hits += len(ids)

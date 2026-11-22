@@ -63,5 +63,7 @@ mais exige de désinstaller l’application avant de passer à une autre signatu
 
 Pour vérifier les dépendances résolues, définir `JAVA_HOME` et `ANDROID_HOME`,
 puis exécuter `python3 tools/audit-dependencies.py`. Le script interroge OSV
-séparément pour les dépendances des plugins Gradle et les dépendances
-d’exécution de la release ; il échoue si un avis est trouvé.
+séparément pour les dépendances Maven des plugins Gradle et celles d’exécution
+de la release. Il échoue si un avis est trouvé ou si la réponse est incomplète.
+Il ne couvre ni les JAR locaux sans coordonnées Maven (aucun dans ce projet),
+ni les binaires de Gradle, du SDK ou du NDK.
