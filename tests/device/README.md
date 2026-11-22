@@ -27,7 +27,12 @@ adb -s SERIAL uninstall audit.check
 The suite launches `SET_WALLPAPER` for result, drives visible actions, and
 checks system/lock IDs from `dumpsys wallpaper` (AOSP English dump format).
 Back and rotation are injected immediately after the confirming tap in one
-device shell. A single new ID and `RESULT_OK` must follow. The refusal check
-clears the restriction and retries in the same preview. The small-window check
-swipes to Cancel at 960 × 580 px and 480 dpi. Host tests (`python3 -m unittest
+device shell. A single new ID and `RESULT_OK` must follow. The Back check
+also requires the preview's diagnostic for a Back received *during* the write;
+the rotation check requires a second creation of the preview. In a 960 × 580
+px window at 480 dpi the suite scrolls down to confirm, checks that the error
+comes into view, clears the restriction and retries in the same preview. It
+also scrolls to Cancel. UI checks wait for the BlackBG window and report the
+focused activity, display settings and last UI tree on timeout.
+Host tests (`python3 -m unittest
 discover`) also decode the 1-bit PNG samples and validate the manifest/icons.

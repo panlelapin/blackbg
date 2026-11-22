@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="audit.check">
   <application android:label="Test picker" android:testOnly="true">
-    <activity android:name=".Probe" android:exported="true" />
+    <activity android:name=".Probe" android:exported="true" android:permission="android.permission.DUMP" />
     <receiver android:name=".Probe$Admin" android:permission="android.permission.BIND_DEVICE_ADMIN" android:exported="true">
       <meta-data android:name="android.app.device_admin" android:resource="@xml/admin" />
       <intent-filter><action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/></intent-filter>

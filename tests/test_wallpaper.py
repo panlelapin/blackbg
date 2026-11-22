@@ -30,7 +30,7 @@ class WallpaperSmoke(unittest.TestCase):
             chunk = png[pos + 8:pos + 8 + size]
             if kind == b"IHDR":
                 width, height, depth, color, compression, filtering, interlace = struct.unpack(">IIBBBBB", chunk)
-                self.assertGreaterEqual(min(width, height), 3840)
+                self.assertEqual((width, height), (4096, 4096))
                 self.assertEqual((depth, color, compression, filtering, interlace), (1, 0, 0, 0, 0))
             self.assertNotEqual(kind, b"tRNS", "black must be opaque")
             if kind == b"IDAT":

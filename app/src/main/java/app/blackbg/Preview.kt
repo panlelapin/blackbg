@@ -7,9 +7,11 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.widget.Button
 import android.widget.LinearLayout
@@ -56,6 +58,7 @@ class Preview : Activity() {
     private lateinit var operation: ApplyOperation
     private val choices = mutableListOf<Button>()
     private lateinit var error: TextView
+    private lateinit var scroll: ScrollView
 
     override fun onRetainNonConfigurationInstance(): Any = operation
 
@@ -77,18 +80,41 @@ class Preview : Activity() {
             return
         }
         choices.forEach { it.isEnabled = operation.status != Status.Writing }
-        error.visibility = if (operation.status == Status.Failed) View.VISIBLE else View.GONE
+        if (operation.status != Status.Failed) {
+            error.visibility = View.GONE
+        } else if (error.visibility != View.VISIBLE) {
+            error.visibility = View.VISIBLE
+            scroll.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    scroll.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    if (error.isShown) scroll.scrollTo(0, 0)
+                }
+            })
+        }
+    }
+
+    private fun consumesBack(): Boolean = when (operation.status) {
+        Status.Writing -> {
+            Log.d("BlackBG", "Back ignored while applying wallpaper")
+            true
+        }
+        Status.Applied -> true
+        else -> false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         operation = lastNonConfigurationInstance as? ApplyOperation ?: ApplyOperation()
         onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
-            if (operation.status != Status.Writing && operation.status != Status.Applied) finish()
+            // Button posts its click after touch-up. Let an already queued choice
+            // run first, then recheck before committing to cancellation.
+            if (!consumesBack()) window.decorView.post {
+                if (!isDestroyed && !consumesBack()) finish()
+            }
         }
         fun dp(value: Int): Int = (value * resources.displayMetrics.density + 0.5f).toInt()
 
-        val scroll = ScrollView(this).apply {
+        scroll = ScrollView(this).apply {
             isFillViewport = true
             setBackgroundColor(Color.BLACK)
             setOnApplyWindowInsetsListener { view, insets ->
@@ -102,7 +128,7 @@ class Preview : Activity() {
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
         }
         error = TextView(this).apply {
-            text = "Couldn’t apply wallpaper."
+            setText(R.string.apply_failed)
             setTextColor(Color.WHITE)
             setPaddingRelative(dp(24), dp(8), dp(24), dp(8))
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
@@ -129,7 +155,7 @@ class Preview : Activity() {
         }
 
         fun applyWallpaper(flags: Int) {
-            operation.start(applicationContext, flags)
+            if (!isFinishing && !isDestroyed) operation.start(applicationContext, flags)
         }
         addChoice("Lockscreen", R.drawable.ic_lockscreen) { applyWallpaper(WallpaperManager.FLAG_LOCK) }
         addChoice("Homescreen", R.drawable.ic_homescreen) { applyWallpaper(WallpaperManager.FLAG_SYSTEM) }

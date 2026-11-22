@@ -15,16 +15,60 @@ LABELS = ["Lockscreen", "Homescreen", "Both", "Cancel"]
 
 
 def adb(*args):
-    return subprocess.check_output([adb_path, "-s", serial, *args], text=True, timeout=45).strip()
+    return subprocess.check_output([adb_path, "-s", serial, *args], text=True, timeout=45,
+                                   stderr=subprocess.STDOUT).strip()
 
 
 def sh(cmd):
     return adb("shell", cmd)
 
 
-def ui():
-    xml = sh("uiautomator dump /data/local/tmp/blackbg-ui.xml >/dev/null && cat /data/local/tmp/blackbg-ui.xml")
-    return ET.fromstring(xml)
+def diagnostics():
+    return sh("wm size; wm density; wm user-rotation; dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'; "
+              "logcat -d -t 1000 -s AndroidRuntime:E WallAuditResult:I BlackBG:D")
+
+
+def preview_ui(description, condition):
+    end = time.monotonic() + 12
+    while time.monotonic() < end:
+        try:
+            path = "/data/local/tmp/blackbg-ui.xml"
+            xml = sh(f"rm -f {path}; uiautomator dump {path} >/dev/null && cat {path}")
+            root = ET.fromstring(xml).find("node")
+            if root is not None and root.get("package") == "app.blackbg" and condition(root):
+                return root
+            last = xml
+        except (ET.ParseError, subprocess.CalledProcessError) as e:
+            last = f"{e}: {getattr(e, 'output', '')}"
+        time.sleep(.1)
+    raise AssertionError(f"Timed out waiting for {description}\n{diagnostics()}\nLast UI: {last}")
+
+
+def row(root, label):
+    return root.find(f".//node[@text='{label}']")
+
+
+def bounds(node):
+    return tuple(map(int, re.findall(r"-?\d+", node.get("bounds"))))
+
+
+def short_viewport():
+    return preview_ui("scrollable 960x580 BlackBG window", lambda r:
+                      bounds(r) == (0, 0, 960, 580) and r.find(".//node[@scrollable='true']") is not None)
+
+
+def short_display():
+    # Resize the foreground preview, not the launcher or the policy command.
+    # Wait for the resize before rotating; wm/settings changes are asynchronous.
+    preview_ui("foreground chooser", lambda r: row(r, "Lockscreen") is not None)
+    sh("wm size 580x960; wm density 480")
+    preview_ui("resized chooser", lambda r: sorted(bounds(r)[2:]) == [580, 960])
+    sh("wm user-rotation lock 1")
+    return short_viewport()
+
+
+def swipe_up():
+    sh("input swipe 450 445 450 120 300")
 
 
 def ids():
@@ -43,9 +87,8 @@ def open_picker(mode=""):
 
 
 def tap(label, follow=""):
-    row = next((n for n in ui().iter("node") if n.get("text") == label), None)
-    assert row is not None and row.get("enabled") == "true", f"{label} missing or disabled"
-    x, y, right, bottom = map(int, re.findall(r"\d+", row.get("bounds")))
+    root = preview_ui(f"enabled {label}", lambda r: r.find(f".//node[@text='{label}'][@enabled='true']") is not None)
+    x, y, right, bottom = bounds(row(root, label))
     sh(f"input tap {(x + right) // 2} {(y + bottom) // 2}" + (f"; {follow}" if follow else ""))
 
 
@@ -64,16 +107,18 @@ class Picker(unittest.TestCase):
         while time.monotonic() < end:
             matches = re.findall(r"result=(-?\d+)", adb("logcat", "-d", "-s", "WallAuditResult:I"))
             if matches:
-                self.assertEqual(matches, [str(expected)], f"wallpaper IDs {ids()}")
+                if matches != [str(expected)]:
+                    self.fail(f"expected {expected}, got {matches}; wallpaper IDs {ids()}\n{diagnostics()}")
                 return
             time.sleep(.15)
-        self.fail(f"caller received no result; wallpaper IDs {ids()}")
+        self.fail(f"caller received no result; wallpaper IDs {ids()}\n{diagnostics()}")
 
     def test_cancel_and_back(self):
         before = ids()
         for action in ["Cancel", "Back"]:
             self.start()
-            self.assertEqual([n.get("text") for n in ui().iter("node")
+            root = preview_ui("picker choices", lambda r: row(r, "Cancel") is not None)
+            self.assertEqual([n.get("text") for n in root.iter("node")
                               if n.get("class") == "android.widget.Button"], LABELS)
             tap(action) if action == "Cancel" else sh("input keyevent 4")
             self.result(0)
@@ -106,7 +151,13 @@ class Picker(unittest.TestCase):
         self.assertEqual(ids(), (before + 1, before + 1), "expected exactly one new wallpaper")
 
     def test_back_during_write(self):
-        self.confirmed_then("input keyevent 4")
+        for _ in range(3):
+            self.confirmed_then("input keyevent 4")
+            evidence = adb("logcat", "-d", "-s", "BlackBG:D")
+            if "Back ignored while applying wallpaper" in evidence:
+                print(evidence, flush=True)
+                return
+        self.fail("Back never reached the preview during a pending write\n" + diagnostics())
 
     def test_recreate_during_write(self):
         self.confirmed_then("wm user-rotation lock 1")
@@ -118,21 +169,27 @@ class Picker(unittest.TestCase):
         open_picker("deny")
         self.addCleanup(open_picker, "restore")
         self.start()
+        top = bounds(row(short_display(), "Lockscreen"))[1]
+        swipe_up()
+        preview_ui("scrolled down to Cancel", lambda r: row(r, "Cancel") is not None and row(r, "Lockscreen") is None)
         tap("Both")
-        self.assertIn("Couldn’t apply wallpaper.", [n.get("text") for n in ui().iter("node")])
+        error = "Couldn’t apply wallpaper."
+        preview_ui("error visible at the top inset", lambda r: row(r, error) is not None and bounds(row(r, error))[1] == top
+                   and row(r, "Lockscreen") is not None)
         self.assertEqual(ids(), before)
         self.assertNotIn("result=", adb("logcat", "-d", "-s", "WallAuditResult:I"))
         open_picker("restore")
+        short_viewport()
+        swipe_up()
         tap("Both")
         self.result(-1)
         self.assertNotEqual(ids(), before)
 
     def test_short_window(self):
-        sh("wm size 960x580; wm density 480")
         before = ids()
         self.start()
-        self.assertTrue(any(n.get("scrollable") == "true" for n in ui().iter("node")))
-        sh("input swipe 450 445 450 120 300")
+        short_display()
+        swipe_up()
         tap("Cancel")
         self.result(0)
         self.assertEqual(ids(), before)
