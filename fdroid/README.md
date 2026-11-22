@@ -46,8 +46,8 @@ cp "$src/fdroid/app.blackbg.yml" "$private/metadata/"
 
 En cas d’erreur, ne pas publier. Après correction, on peut relancer avec les
 mêmes octets. Pour un APK différent, augmenter le `versionCode` et utiliser
-la même clé de release. Vérifier que `repo/entry.jar`, `repo/index-v2.json`
-et `repo/app.blackbg_<versionCode>.apk` sont présents dans le dossier privé.
+la même clé de release. Le script vérifie que l’index v2 référence le fichier
+attendu avec son `versionCode` et son empreinte SHA-256.
 
 ### 3. Publier uniquement les fichiers publics
 
@@ -63,14 +63,19 @@ git -C "$pages" remote add origin https://github.com/panlelapin/blackbg.git
 ```
 
 Si Pages héberge déjà un site, conserver sa source et ajouter `fdroid/repo/` à
-ce site plutôt que de le remplacer. Pour le site dédié :
+ce site plutôt que de le remplacer. Pour le site dédié, depuis un checkout
+`gh-pages` propre et à jour, préparer les fichiers et examiner le diff :
 
 ```sh
-mkdir -p "$pages/fdroid/repo"
-touch "$pages/.nojekyll"
-rsync -rt --delete "$private/repo/" "$pages/fdroid/repo/"
-git -C "$pages" add -- .nojekyll fdroid/repo
-git -C "$pages" diff --cached --stat
+"$src/fdroid/stage-pages.sh" "$private" "$pages" &&
+  git -C "$pages" add -- .nojekyll fdroid/repo &&
+  git -C "$pages" diff --cached --stat
+```
+
+Le script refuse de supprimer ou remplacer un APK déjà publié. Si la
+préparation réussit et que le diff correspond à la release, publier :
+
+```sh
 git -C "$pages" commit -m "Publier le dépôt F-Droid BlackBG"
 git -C "$pages" push -u origin gh-pages
 ```
