@@ -6,8 +6,11 @@ ou ultérieur, sur appareil ARM 64 bits (`arm64-v8a`).
 
 ## Installation
 
-Télécharger l’APK signé depuis les [releases](https://github.com/panlelapin/blackbg/releases/latest)
-et l’installer sur le téléphone. BlackBG n’a pas d’icône dans le lanceur.
+Avec F-Droid, [ajouter le dépôt BlackBG](https://panlelapin.github.io/blackbg/fdroid/repo/?fingerprint=363DEB527CD0C41ABBC30359005EE6F2A5A6869716D32CF42CEED66DCC3A7A7A),
+actualiser le catalogue, puis installer **BlackBG**. Le même APK signé est
+disponible dans les [releases GitHub](https://github.com/panlelapin/blackbg/releases/latest).
+
+BlackBG n’a pas d’icône dans le lanceur.
 Dans un sélecteur de fonds d’écran compatible, choisir **BlackBG**, puis
 **Lockscreen** (verrouillage), **Homescreen** (accueil) ou **Both** (les deux).
 **Cancel** ou Retour ferme l’aperçu sans rien changer avant ce choix. Une fois
@@ -20,8 +23,7 @@ tierces, ouvrir l’aperçu via ADB :
 adb shell am start -a android.intent.action.SET_WALLPAPER -p app.blackbg
 ```
 
-La distribution via un dépôt F-Droid personnel sur GitHub Pages est préparée.
-Pour la première publication et les mises à jour, voir [Publier le dépôt F-Droid](fdroid/README.md).
+Pour publier une mise à jour : [Publier le dépôt F-Droid](fdroid/README.md).
 
 ## Compilation locale
 
