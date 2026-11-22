@@ -5,6 +5,7 @@ import android.app.WallpaperManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.WindowInsets
 import android.widget.Button
@@ -18,9 +19,11 @@ class Preview : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        fun dp(value: Int): Int = (value * resources.displayMetrics.density + 0.5f).toInt()
+
         val controls = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
             setBackgroundColor(Color.BLACK)
             setOnApplyWindowInsetsListener { view, insets ->
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())
@@ -28,22 +31,35 @@ class Preview : Activity() {
                 insets
             }
         }
-        val apply = Button(this).apply { text = "Appliquer aux deux écrans" }
-        val cancel = Button(this).apply {
-            text = "Annuler"
-            setOnClickListener { finish() }
+        val choices = mutableListOf<Button>()
+        fun addChoice(label: String, icon: Int, action: () -> Unit) {
+            val choice = Button(this, null, android.R.attr.borderlessButtonStyle).apply {
+                text = label
+                isAllCaps = false
+                setTextColor(Color.WHITE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+                gravity = Gravity.START or Gravity.CENTER_VERTICAL
+                minHeight = dp(56)
+                setPaddingRelative(dp(24), dp(8), dp(24), dp(8))
+                compoundDrawablePadding = dp(16)
+                setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0)
+                setOnClickListener { action() }
+            }
+            choices.add(choice)
+            controls.addView(choice, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT,
+            ))
         }
-        apply.setOnClickListener {
-            apply.isEnabled = false
-            cancel.isEnabled = false
+
+        fun applyWallpaper(flags: Int) {
+            choices.forEach { it.isEnabled = false }
             Thread {
                 val result = runCatching {
                     val black = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
                     black.eraseColor(Color.BLACK)
                     val manager = WallpaperManager.getInstance(this)
                     check(manager.isWallpaperSupported && manager.isSetWallpaperAllowed)
-                    check(manager.setBitmap(black, null, false,
-                        WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK) > 0)
+                    check(manager.setBitmap(black, null, false, flags) > 0)
                 }
                 runOnUiThread {
                     if (!isDestroyed && !isFinishing) {
@@ -51,16 +67,17 @@ class Preview : Activity() {
                             setResult(RESULT_OK)
                             finish()
                         } else {
-                            Toast.makeText(this, "Impossible d’appliquer le fond noir.", Toast.LENGTH_LONG).show()
-                            apply.isEnabled = true
-                            cancel.isEnabled = true
+                            Toast.makeText(this, "Couldn’t apply wallpaper.", Toast.LENGTH_LONG).show()
+                            choices.forEach { it.isEnabled = true }
                         }
                     }
                 }
             }.start()
         }
-        controls.addView(apply)
-        controls.addView(cancel)
+        addChoice("Lockscreen", R.drawable.ic_lockscreen) { applyWallpaper(WallpaperManager.FLAG_LOCK) }
+        addChoice("Homescreen", R.drawable.ic_homescreen) { applyWallpaper(WallpaperManager.FLAG_SYSTEM) }
+        addChoice("Both", R.drawable.ic_both) { applyWallpaper(WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK) }
+        addChoice("Cancel", R.drawable.ic_cancel) { finish() }
         setContentView(controls)
     }
 }
