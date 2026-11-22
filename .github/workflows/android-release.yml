@@ -1,0 +1,33 @@
+name: APK BlackBG officiel
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: ./gradlew --no-daemon :app:assembleRelease
+      - run: cp app/build/outputs/apk/release/app-release-unsigned.apk unsigned.apk
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: unsigned-android
+          path: unsigned.apk
+          retention-days: 1
+  sign:
+    needs: build
+    permissions:
+      contents: write
+    uses: panlelapin/android/.github/workflows/sign-apk.yml@6299389f5cc44bd9a090bd68528e1d7f7ac27f3f
+    secrets:
+      apk_p12: ${{ secrets.ANDROID_RELEASE_P12_B64 }}
+      apk_password: ${{ secrets.ANDROID_RELEASE_PASSWORD }}

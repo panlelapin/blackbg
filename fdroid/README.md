@@ -1,16 +1,7 @@
-# Publier BlackBG dans le catalogue panlelapin
+# Publier BlackBG
 
-Le catalogue partagé par BlackBG et WorkFlowy Quick Add est désormais
-[`panlelapin/fdroid-repo`](https://github.com/panlelapin/fdroid-repo).
-La publication se fait sur `main` dans ce dépôt, et non sur `blackbg/gh-pages`.
-L’ancienne adresse reste accessible aux clients déjà configurés ; pour recevoir
-les nouvelles versions, [ajouter le nouveau catalogue](https://panlelapin.github.io/fdroid-repo/fdroid/repo/?fingerprint=363DEB527CD0C41ABBC30359005EE6F2A5A6869716D32CF42CEED66DCC3A7A7A).
+1. Augmenter `versionCode` et `versionName` dans `app/build.gradle.kts`.
+2. Depuis GitHub, publier une release `v<versionName>` sur le commit correspondant.
+3. L’action **APK BlackBG officiel** construit et signe l’APK ARM64 et le joint à cette release. Le lancement manuel de cette action vérifie la signature sans publier d’APK.
 
-1. Télécharger l’APK signé de la release BlackBG. Utiliser le dossier privé
-   F-Droid existant (`~/.local/share/blackbg-fdroid`) avec son index, toutes les
-   applications et sa clé. Ne pas relancer `fdroid init`.
-2. Depuis la racine de BlackBG, lancer `./prepare-fdroid.sh <apk> <dossier-privé>`.
-   Ce script contrôle le paquet, le signataire et la version.
-3. Vérifier dans `repo/index-v2.json` la présence de BlackBG et des autres
-   applications. Suivre les [instructions de publication du catalogue](https://github.com/panlelapin/fdroid-repo#readme).
-   Le script historique `fdroid/stage-pages.sh` cible l’ancien hébergement.
+Le [catalogue partagé](https://github.com/panlelapin/android) importe les nouveaux APK signés. Il vérifie le certificat de BlackBG indépendamment de la signature de l’index. [Ajouter le catalogue F-Droid](https://panlelapin.github.io/android/fdroid/repo/?fingerprint=363DEB527CD0C41ABBC30359005EE6F2A5A6869716D32CF42CEED66DCC3A7A7A).
