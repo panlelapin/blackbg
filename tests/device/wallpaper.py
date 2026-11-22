@@ -188,9 +188,13 @@ class Picker(unittest.TestCase):
         self.fail("Back never reached the preview during a pending write\n" + diagnostics())
 
     def test_recreate_during_write(self):
-        self.confirmed_then("wm user-rotation lock 1")
-        events = adb("logcat", "-b", "events", "-d", "-s", "wm_on_create_called:I")
-        self.assertGreaterEqual(events.count("app.blackbg.Preview"), 2, events)
+        for rotation in (1, 0, 1):
+            self.confirmed_then(f"wm user-rotation lock {rotation}")
+            evidence = adb("logcat", "-d", "-s", "BlackBG:D")
+            if "Retaining pending wallpaper write across rotation" in evidence:
+                print(evidence, flush=True)
+                return
+        self.fail("No orientation change retained a pending write\n" + diagnostics())
 
     def test_refusal_and_retry(self):
         before = ids()

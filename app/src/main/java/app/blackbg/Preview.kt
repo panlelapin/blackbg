@@ -3,6 +3,7 @@ package app.blackbg
 import android.app.Activity
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -60,7 +61,12 @@ class Preview : Activity() {
     private lateinit var error: TextView
     private lateinit var scroll: ScrollView
 
-    override fun onRetainNonConfigurationInstance(): Any = operation
+    override fun onRetainNonConfigurationInstance(): Any {
+        if (operation.status == Status.Writing && (changingConfigurations and ActivityInfo.CONFIG_ORIENTATION) != 0) {
+            Log.d("BlackBG", "Retaining pending wallpaper write across rotation")
+        }
+        return operation
+    }
 
     override fun onStart() {
         super.onStart()

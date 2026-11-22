@@ -29,7 +29,9 @@ checks system/lock IDs from `dumpsys wallpaper` (AOSP English dump format).
 Back and rotation are injected immediately after the confirming tap in one
 device shell. A single new ID and `RESULT_OK` must follow. The Back check
 also requires the preview's diagnostic for a Back received *during* the write;
-the rotation check requires a second creation of the preview. In a 960 × 580
+the rotation check requires the preview to retain a pending write during an
+orientation change. Each check allows up to three attempts to observe the
+overlap; every attempt must still satisfy the ID and result checks. In a 960 × 580
 px window at 480 dpi the suite scrolls down to confirm, checks that the error
 comes into view, clears the restriction and retries in the same preview. It
 also scrolls to Cancel. UI checks wait for the BlackBG window and report the
