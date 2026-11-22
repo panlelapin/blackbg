@@ -20,6 +20,9 @@ tierces, ouvrir l’aperçu via ADB :
 adb shell am start -a android.intent.action.SET_WALLPAPER -p app.blackbg
 ```
 
+La distribution via un dépôt F-Droid personnel sur GitHub Pages est préparée.
+Pour la première publication et les mises à jour, voir [Publier le dépôt F-Droid](fdroid/README.md).
+
 ## Compilation locale
 
 Sur macOS avec Android Studio, installer la plateforme SDK 37.1, les Build Tools
