@@ -23,12 +23,14 @@ paramètres de signature** :
 
 ```yaml
 repo_url: https://panlelapin.github.io/blackbg/fdroid/repo
-repo_name: BlackBG
+repo_name: Pan le lapin repo
+repo_icon: panlelapin.png
 repo_description: Versions officielles de BlackBG
 archive_older: 0
 make_current_version_link: false
 ```
 
+Copier l’avatar du dépôt avec `cp "$src/fdroid/panlelapin.png" "$private/"`.
 Sauvegarder le dossier privé et le keystore indiqué dans `config.yml`.
 Cette clé signe l’index, pas l’APK. Ne pas relancer `fdroid init` lors des mises
 à jour, ni placer ce dossier sur GitHub.
