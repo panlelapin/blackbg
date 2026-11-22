@@ -22,8 +22,8 @@ adb shell am start -a android.intent.action.SET_WALLPAPER -p app.blackbg
 
 ## Compilation locale
 
-Sur macOS avec Android Studio, installer la plateforme SDK 36.1, les Build Tools
-36.0.0, le NDK 28.2.13676358 et CMake 3.22.1. Pour d’autres emplacements,
+Sur macOS avec Android Studio, installer la plateforme SDK 37.1, les Build Tools
+36.0.0, le NDK 30.0.16248370 et CMake 3.22.1. Pour d’autres emplacements,
 définir `JAVA_HOME` (JDK 21) et `ANDROID_HOME` (SDK Android).
 
 ```sh
@@ -60,3 +60,8 @@ avec `umask 077`, créez `~/.android/blackbg-personal/` et copiez-y les deux
 fichiers personnels, sans écraser de clé existante. Les deux modes conservent
 l’identifiant `app.blackbg` : Android accepte une mise à jour avec la même clé,
 mais exige de désinstaller l’application avant de passer à une autre signature.
+
+Pour vérifier les dépendances résolues, définir `JAVA_HOME` et `ANDROID_HOME`,
+puis exécuter `python3 tools/audit-dependencies.py`. Le script interroge OSV
+séparément pour les dépendances des plugins Gradle et les dépendances
+d’exécution de la release ; il échoue si un avis est trouvé.

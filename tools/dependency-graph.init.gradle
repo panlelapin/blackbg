@@ -1,0 +1,19 @@
+// Report selected external components, including BOMs, rather than requested versions.
+gradle.projectsEvaluated {
+    def root = gradle.rootProject
+    root.tasks.register("auditDependencyGraph") {
+        doLast {
+            def emit = { scope, configuration ->
+                def graph = configuration.incoming.resolutionResult
+                graph.allDependencies.each {
+                    if (it instanceof UnresolvedDependencyResult) throw it.failure
+                }
+                graph.allComponents*.id.findAll { it instanceof ModuleComponentIdentifier }.each {
+                    println "AUDIT $scope $it.group:$it.module:$it.version"
+                }
+            }
+            root.allprojects.each { emit("build", it.buildscript.configurations.classpath) }
+            emit("runtime", root.project(":app").configurations.releaseRuntimeClasspath)
+        }
+    }
+}

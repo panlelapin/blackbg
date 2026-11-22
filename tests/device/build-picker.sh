@@ -5,7 +5,7 @@ here=$(cd "$(dirname "$0")/picker" && pwd)
 cd "$1" # empty temporary directory
 sdk=${ANDROID_HOME:-"$HOME/Library/Android/sdk"}
 bt="$sdk/build-tools/36.0.0"
-jar="$sdk/platforms/android-36.1/android.jar"
+jar="$sdk/platforms/android-37.1/android.jar"
 export JAVA_HOME=${JAVA_HOME:-"/Applications/Android Studio.app/Contents/jbr/Contents/Home"}
 export PATH="$JAVA_HOME/bin:$PATH"
 mkdir classes dex

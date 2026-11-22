@@ -13,7 +13,7 @@ python3 tests/device/wallpaper.py --disposable-emulator emulator-5582 \
 
 Pass the exact emulator serial from `adb devices`. The runner checks both the
 serial and Android’s QEMU property. It builds a temporary test-only picker with
-SDK platform 36.1, Build Tools 36.0.0 and JDK 21 (`ANDROID_HOME`, `JAVA_HOME`
+SDK platform 37.1, Build Tools 36.0.0 and JDK 21 (`ANDROID_HOME`, `JAVA_HOME`
 if outside the macOS defaults). The picker is temporarily made device owner to
 toggle `no_set_wallpaper` for the retry check. Its key, owner and package are
 removed on normal exit (including test failures). After an interrupted run,

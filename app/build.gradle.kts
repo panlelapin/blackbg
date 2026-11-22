@@ -1,4 +1,4 @@
-plugins { id("com.android.application") version "9.0.1" }
+plugins { id("com.android.application") }
 
 val signingMode = providers.environmentVariable("BLACKBG_SIGNING_MODE").orNull
 if (signingMode == "personal") {
@@ -7,14 +7,14 @@ if (signingMode == "personal") {
 
 android {
     namespace = "app.blackbg"
-    ndkVersion = "28.2.13676358"
-    compileSdk { version = release(36) { minorApiLevel = 1 } }
+    ndkVersion = "30.0.16248370"
+    compileSdk { version = release(37) { minorApiLevel = 1 } }
     defaultConfig {
         applicationId = "app.blackbg"
         minSdk = 36
-        targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        targetSdk = 37
+        versionCode = 3
+        versionName = "1.0.2"
         ndk { abiFilters += "arm64-v8a" }
     }
     externalNativeBuild {
