@@ -12,6 +12,10 @@ import android.widget.LinearLayout
 import android.widget.Toast
 
 class Preview : Activity() {
+    companion object {
+        init { System.loadLibrary("blackbg_arm64") }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val controls = LinearLayout(this).apply {
