@@ -25,23 +25,51 @@ def sh(cmd):
 
 def diagnostics():
     return sh("wm size; wm density; wm user-rotation; dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'; "
-              "logcat -d -t 1000 -s AndroidRuntime:E WallAuditResult:I BlackBG:D")
+              "logcat -d -t 1000 -s AndroidRuntime:E InputDispatcher:I WallAuditResult:I BlackBG:D")
+
+
+def input_window():
+    """Return the ready Preview input-window record, or None and the blocking state."""
+    tracks = sh("wm shell dump | sed -n '/Pending Transitions:/,/^$/p'")
+    if not re.fullmatch(r"Pending Transitions:\s+none\s+Ready-during-sync Transitions:\s+none\s+"
+                        r"Tracks:(?:\s+Track #\d+\s+active=null)*", tracks):
+        return None, f"WM transitions: {tracks}"
+    windows = sh("dumpsys input | sed -n '/^  FocusedWindows:/,+1p; /: name=.*blackbg.*inputConfig=/p'")
+    focus = re.search(r"displayId=0, name='(\w+ app\.blackbg/app\.blackbg\.Preview)'", windows)
+    # InputDispatcher lists layers front-to-back. A sink behind Preview is normal.
+    for line in windows.splitlines():
+        if "displayId=0, inputConfig=" not in line or "touchableRegion=<empty>" in line or "NOT_TOUCHABLE" in line:
+            continue
+        if "ActivityRecordInputSink app.blackbg/.Preview," in line:
+            break
+        if focus and f"name={focus[1]}," in line and "NO_INPUT_CHANNEL" not in line and "DROP_INPUT" not in line:
+            return line, windows
+    return None, f"InputDispatcher: {windows}"
 
 
 def preview_ui(description, condition):
     end = time.monotonic() + 12
     while time.monotonic() < end:
         try:
+            before, last = input_window()
+            if before is None:
+                time.sleep(.1)
+                continue
             path = "/data/local/tmp/blackbg-ui.xml"
             xml = sh(f"rm -f {path}; uiautomator dump {path} >/dev/null && cat {path}")
             root = ET.fromstring(xml).find("node")
             if root is not None and root.get("package") == "app.blackbg" and condition(root):
-                return root
-            last = xml
+                # A wallpaper-colors config change can relaunch Preview while the
+                # hierarchy is being dumped. Re-observe it before injecting any input.
+                after, last = input_window()
+                if after == before:
+                    return root
+            else:
+                last = xml
         except (ET.ParseError, subprocess.CalledProcessError) as e:
             last = f"{e}: {getattr(e, 'output', '')}"
         time.sleep(.1)
-    raise AssertionError(f"Timed out waiting for {description}\n{diagnostics()}\nLast UI: {last}")
+    raise AssertionError(f"Timed out waiting for {description}\n{diagnostics()}\nLast observation: {last}")
 
 
 def row(root, label):
