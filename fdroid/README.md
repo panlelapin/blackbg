@@ -41,8 +41,9 @@ Télécharger **l’asset `.apk` du tag voulu**, pas celui d’une ancienne rele
 Depuis BlackBG, avec les mêmes variables et le même `PATH` qu’à l’étape 1 :
 
 ```sh
-mkdir -p "$private/metadata"
+mkdir -p "$private/metadata/app.blackbg/en-US/images"
 cp "$src/fdroid/app.blackbg.yml" "$private/metadata/"
+cp "$src/fdroid/app.blackbg/en-US/images/icon.png" "$private/metadata/app.blackbg/en-US/images/"
 ./prepare-fdroid.sh "/chemin/vers/la-release.apk" "$private"
 ```
 
