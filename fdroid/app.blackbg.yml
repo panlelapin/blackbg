@@ -1,0 +1,8 @@
+Name: BlackBG
+Summary: Un fond noir pour l’écran d’accueil ou de verrouillage
+Description: |
+  Applique un fond noir statique depuis le sélecteur de fonds d’écran
+  Android, sans lire les anciens fonds. Choisissez l’accueil, le
+  verrouillage ou les deux. Aucune icône dans le lanceur.
+SourceCode: https://github.com/panlelapin/blackbg
+IssueTracker: https://github.com/panlelapin/blackbg/issues
