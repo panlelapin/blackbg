@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -167,7 +168,13 @@ class Preview : Activity() {
         addChoice("Homescreen", R.drawable.ic_homescreen) { applyWallpaper(WallpaperManager.FLAG_SYSTEM) }
         addChoice("Both", R.drawable.ic_both) { applyWallpaper(WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK) }
         addChoice("Cancel", R.drawable.ic_cancel) { finish() }
-        scroll.addView(controls)
+        val root = FrameLayout(this)
+        root.addView(controls, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            Gravity.CENTER,
+        ))
+        scroll.addView(root)
         setContentView(scroll)
     }
 }

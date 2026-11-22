@@ -39,6 +39,15 @@ class WallpaperSmoke(unittest.TestCase):
         # Filter byte zero followed by packed grayscale samples zero, for every row.
         self.assertEqual(zlib.decompress(data), bytes(height * (1 + (width + 7) // 8)))
 
+    def test_choice_block_centers_while_rows_stay_start_aligned(self):
+        code = (MAIN / "java/app/blackbg/Preview.kt").read_text()
+        self.assertRegex(code, r"root\.addView\(controls, FrameLayout\.LayoutParams\(\s*"
+                         r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*"
+                         r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*Gravity\.CENTER,?\s*\)\)")
+        self.assertIn("scroll.addView(root)", code)
+        self.assertIn("setContentView(scroll)", code)
+        self.assertIn("gravity = Gravity.START or Gravity.CENTER_VERTICAL", code)
+
     def test_vector_disks_and_glyphs(self):
         for name in ("wallpaper", "lockscreen", "homescreen", "both", "cancel"):
             with self.subTest(name=name):
