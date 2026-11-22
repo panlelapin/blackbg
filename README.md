@@ -9,8 +9,12 @@ ou ultérieur, sur appareil ARM 64 bits (`arm64-v8a`).
 Télécharger l’APK signé depuis les [releases](https://github.com/panlelapin/blackbg/releases/latest)
 et l’installer sur le téléphone. BlackBG n’a pas d’icône dans le lanceur.
 Dans un sélecteur de fonds d’écran compatible, choisir **BlackBG**, puis
-**Appliquer aux deux écrans**. Si le sélecteur du téléphone ne liste pas les
-applications tierces, ouvrir l’aperçu via ADB :
+**Lockscreen** (verrouillage), **Homescreen** (accueil) ou **Both** (les deux).
+**Cancel** ou Retour ferme l’aperçu sans rien changer avant ce choix. Une fois
+la cible choisie, attendre la fin de l’application du fond ; en cas de refus,
+l’aperçu affiche une erreur et permet de réessayer. En fenêtre basse, faire
+défiler les choix. Si le sélecteur du téléphone ne liste pas les applications
+tierces, ouvrir l’aperçu via ADB :
 
 ```sh
 adb shell am start -a android.intent.action.SET_WALLPAPER -p app.blackbg
