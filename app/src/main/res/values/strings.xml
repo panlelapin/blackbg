@@ -1,3 +1,5 @@
 <resources>
+    <string name="preview_title">Black background</string>
+    <string name="github_link">github</string>
     <string name="apply_failed">Couldn’t apply wallpaper.</string>
 </resources>

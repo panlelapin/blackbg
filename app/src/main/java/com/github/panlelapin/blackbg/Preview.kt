@@ -8,6 +8,10 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.URLSpan
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
@@ -142,6 +146,14 @@ class Preview : Activity() {
             visibility = View.GONE
         }
         controls.addView(error)
+        controls.addView(TextView(this).apply {
+            setText(R.string.preview_title)
+            setTextColor(Color.WHITE)
+            textSize = 22f
+            gravity = Gravity.CENTER
+            isAccessibilityHeading = true
+            setPadding(dp(12), dp(8), dp(12), dp(8))
+        })
         fun addChoice(label: String, icon: Int, action: () -> Unit) {
             val choice = Button(this, null, android.R.attr.borderlessButtonStyle).apply {
                 text = label
@@ -174,7 +186,23 @@ class Preview : Activity() {
             FrameLayout.LayoutParams.WRAP_CONTENT,
             Gravity.CENTER,
         ))
-        scroll.addView(root)
+        val page = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(root, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1f,
+            ))
+            addView(TextView(this@Preview).apply {
+                text = SpannableString(getString(R.string.github_link)).apply {
+                    setSpan(URLSpan("https://github.com/panlelapin/blackbg"), 0, length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+                movementMethod = LinkMovementMethod.getInstance()
+                setLinkTextColor(Color.WHITE)
+                gravity = Gravity.CENTER
+                minHeight = dp(48)
+            })
+        }
+        scroll.addView(page)
         setContentView(scroll)
     }
 }

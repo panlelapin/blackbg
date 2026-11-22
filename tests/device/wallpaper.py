@@ -147,7 +147,12 @@ class Picker(unittest.TestCase):
             self.start()
             root = preview_ui("picker choices", lambda r: row(r, "Cancel") is not None)
             self.assertEqual([n.get("text") for n in root.iter("node")
-                              if n.get("class") == "android.widget.Button"], LABELS)
+                               if n.get("class") == "android.widget.Button"], LABELS)
+            title = bounds(row(root, "Black background"))
+            link = bounds(row(root, "github"))
+            self.assertLessEqual(title[3], bounds(row(root, "Lockscreen"))[1])
+            self.assertLessEqual(bounds(row(root, "Cancel"))[3], link[1])
+            self.assertAlmostEqual((title[0] + title[2]) / 2, bounds(root)[2] / 2, delta=1)
             tap(action) if action == "Cancel" else sh("input keyevent 4")
             self.result(0)
             self.assertEqual(ids(), before)
@@ -201,7 +206,7 @@ class Picker(unittest.TestCase):
         open_picker("deny")
         self.addCleanup(open_picker, "restore")
         self.start()
-        top = bounds(row(short_display(), "Lockscreen"))[1]
+        top = bounds(row(short_display(), "Black background"))[1]
         swipe_up()
         preview_ui("scrolled down to Cancel", lambda r: row(r, "Cancel") is not None and row(r, "Lockscreen") is None)
         tap("Both")

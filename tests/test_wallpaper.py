@@ -44,7 +44,7 @@ class WallpaperSmoke(unittest.TestCase):
         self.assertRegex(code, r"root\.addView\(controls, FrameLayout\.LayoutParams\(\s*"
                          r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*"
                          r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*Gravity\.CENTER,?\s*\)\)")
-        self.assertIn("scroll.addView(root)", code)
+        self.assertIn("scroll.addView(page)", code)
         self.assertIn("setContentView(scroll)", code)
         self.assertIn("gravity = Gravity.START or Gravity.CENTER_VERTICAL", code)
 
