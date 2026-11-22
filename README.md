@@ -6,7 +6,7 @@ ou ultérieur, sur appareil ARM 64 bits (`arm64-v8a`).
 
 ## Installation
 
-Avec F-Droid, [ajouter « Pan le lapin repo »](https://panlelapin.github.io/blackbg/fdroid/repo/?fingerprint=363DEB527CD0C41ABBC30359005EE6F2A5A6869716D32CF42CEED66DCC3A7A7A),
+Avec F-Droid, [ajouter le catalogue « panlelapin »](https://panlelapin.github.io/panlelapin/fdroid/repo/?fingerprint=363DEB527CD0C41ABBC30359005EE6F2A5A6869716D32CF42CEED66DCC3A7A7A),
 actualiser le catalogue, puis installer **BlackBG**. Le même APK signé est
 disponible dans les [releases GitHub](https://github.com/panlelapin/blackbg/releases/latest).
 
