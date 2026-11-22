@@ -11,7 +11,7 @@ public class Probe extends Activity {
     if (state != null) return;
     String mode = getIntent().getStringExtra("mode");
     if (mode == null) {
-      startActivityForResult(new Intent(Intent.ACTION_SET_WALLPAPER).setPackage("app.blackbg"), 1);
+      startActivityForResult(new Intent(Intent.ACTION_SET_WALLPAPER).setPackage("com.github.panlelapin.blackbg"), 1);
     } else {
       DevicePolicyManager d = getSystemService(DevicePolicyManager.class);
       ComponentName admin = new ComponentName(this, Admin.class);

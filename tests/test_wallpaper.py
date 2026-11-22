@@ -40,7 +40,7 @@ class WallpaperSmoke(unittest.TestCase):
         self.assertEqual(zlib.decompress(data), bytes(height * (1 + (width + 7) // 8)))
 
     def test_choice_block_centers_while_rows_stay_start_aligned(self):
-        code = (MAIN / "java/app/blackbg/Preview.kt").read_text()
+        code = (MAIN / "java/com/github/panlelapin/blackbg/Preview.kt").read_text()
         self.assertRegex(code, r"root\.addView\(controls, FrameLayout\.LayoutParams\(\s*"
                          r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*"
                          r"FrameLayout\.LayoutParams\.WRAP_CONTENT,\s*Gravity\.CENTER,?\s*\)\)")

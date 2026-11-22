@@ -22,22 +22,22 @@ class PrepareFDroid(unittest.TestCase):
         self.work = self.root / "private repo"
         (self.work / "repo").mkdir(parents=True)
         (self.work / "config.yml").write_text("repo_name: BlackBG\n")
-        self.dest = self.work / "repo/app.blackbg_12.apk"
+        self.dest = self.work / "repo/com.github.panlelapin.blackbg_12.apk"
         self.index = self.work / "repo/index-v2.json"
         digest = hashlib.sha256(self.apk.read_bytes()).hexdigest()
         self.version = {"manifest": {"versionCode": 12},
-                        "file": {"name": "/app.blackbg_12.apk", "sha256": digest}}
+                        "file": {"name": "/com.github.panlelapin.blackbg_12.apk", "sha256": digest}}
         self.versions = {digest: self.version}
         self.env = dict(os.environ, PATH=f"{self.root}:{os.environ['PATH']}",
-                        INDEX=json.dumps({"packages": {"app.blackbg": {"versions": self.versions}}}),
-                        SIGNERS=SIGNER, PACKAGE="app.blackbg")
+                        INDEX=json.dumps({"packages": {"com.github.panlelapin.blackbg": {"versions": self.versions}}}),
+                        SIGNERS=SIGNER, PACKAGE="com.github.panlelapin.blackbg")
         for name, body in {
             "apksigner": 'test "$1 $2" = "verify --print-certs" && test -f "$3" || exit 2\n'
                          'echo "$SIGNERS"\nexit "${VERIFY_STATUS:-0}"',
             "aapt": 'test "$1 $2" = "dump badging" && test -f "$3" || exit 2\n'
                     '''echo "package: name='$PACKAGE' versionCode='12' versionName='1.2'"''',
             "fdroid": 'test "$1 $2" = "update --create-metadata" || exit 2\n'
-                      'test -f repo/app.blackbg_12.apk || exit 3\n'
+                      'test -f repo/com.github.panlelapin.blackbg_12.apk || exit 3\n'
                       '[ "${INDEX_STATUS:-0}" = 0 ] || exit "$INDEX_STATUS"\n'
                       'echo "$INDEX" > repo/index-v2.json',
         }.items():
@@ -61,7 +61,7 @@ class PrepareFDroid(unittest.TestCase):
         mktemp.write_text('#!/bin/sh\ntouch "$MARKER"\nexec /usr/bin/mktemp "$@"\n')
         mktemp.chmod(0o755)
         self.env["MARKER"] = str(marker)
-        for changes in ({"PACKAGE": "app.other"}, {"SIGNERS": SIGNER[:-1]},
+        for changes in ({"PACKAGE": "app.blackbg"}, {"SIGNERS": SIGNER[:-1]},
                         {"VERIFY_STATUS": "1"},
                         {"SIGNERS": SIGNER + "\n" + SIGNER.replace("#1", "#2")}):
             with self.subTest(changes=changes):
@@ -85,9 +85,9 @@ class PrepareFDroid(unittest.TestCase):
 
     def test_index_must_list_exact_release(self):
         for changes in ({}, {"manifest": {"versionCode": 13}},
-                        {"file": {"name": "/app.blackbg_12.apk", "sha256": "0"*64}}):
+                        {"file": {"name": "/com.github.panlelapin.blackbg_12.apk", "sha256": "0"*64}}):
             versions = {k: {**v, **changes} for k, v in self.versions.items()} if changes else {}
-            index = {"packages": {"app.blackbg": {"versions": versions}}}
+            index = {"packages": {"com.github.panlelapin.blackbg": {"versions": versions}}}
             with self.subTest(changes=changes):
                 self.assertNotEqual(self.prepare(INDEX=json.dumps(index)).returncode, 0)
 
@@ -98,7 +98,7 @@ class PrepareFDroid(unittest.TestCase):
         public = pages / "fdroid/repo"
         public.mkdir(parents=True)
         subprocess.run(["git", "init", "-q", "-b", "gh-pages", pages], check=True)
-        old = public / "app.blackbg_11.apk"
+        old = public / "com.github.panlelapin.blackbg_11.apk"
         old.write_bytes(b"published")
         cmd = ["bash", SCRIPT.parent / "fdroid/stage-pages.sh", self.work, pages]
         for local in (None, b"different", b"published"):

@@ -6,15 +6,15 @@ if (signingMode == "personal") {
 }
 
 android {
-    namespace = "app.blackbg"
+    namespace = "com.github.panlelapin.blackbg"
     ndkVersion = "30.0.16248370"
     compileSdk { version = release(37) { minorApiLevel = 1 } }
     defaultConfig {
-        applicationId = "app.blackbg"
+        applicationId = "com.github.panlelapin.blackbg"
         minSdk = 36
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 1
+        versionName = "1.0"
         ndk { abiFilters += "arm64-v8a" }
     }
     externalNativeBuild {

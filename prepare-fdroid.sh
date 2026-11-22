@@ -20,7 +20,7 @@ verify_apk() {
     digests=$(sed -nE 's/^Signer #[0-9]+ certificate SHA-256 digest: (.*)$/\1/p' <<< "$signature")
     [[ $digests == "$official" ]] || die "Signataire inattendu : APK release officiel requis."
     badging=$(aapt dump badging "$1")
-    version=$(sed -nE "s/^package: name='app[.]blackbg' versionCode='([0-9]+)' .*/\1/p" <<< "$badging")
+    version=$(sed -nE "s/^package: name='com[.]github[.]panlelapin[.]blackbg' versionCode='([0-9]+)' .*/\1/p" <<< "$badging")
     [[ $version =~ ^[0-9]+$ ]] || die "Paquet ou versionCode inattendu."
 }
 
@@ -30,7 +30,7 @@ trap 'rm -rf -- "$staging"' EXIT
 cp "$apk" "$staging/input.apk"
 verify_apk "$staging/input.apk"
 
-target="repo/app.blackbg_${version}.apk"
+target="repo/com.github.panlelapin.blackbg_${version}.apk"
 [[ ! -L $target && ! -d $target ]] || die "Destination inattendue : $target"
 if [[ -f $target ]]; then
     cmp -s "$staging/input.apk" "$target" || die "Le versionCode $version correspond déjà à un autre APK."
@@ -47,7 +47,7 @@ import sys
 apk = Path(sys.argv[1])
 digest = hashlib.sha256(apk.read_bytes()).hexdigest()
 index = json.loads(Path("repo/index-v2.json").read_bytes())
-release = index.get("packages", {}).get("app.blackbg", {}).get("versions", {}).get(digest, {})
+release = index.get("packages", {}).get("com.github.panlelapin.blackbg", {}).get("versions", {}).get(digest, {})
 file = release.get("file", {})
 if (release.get("manifest", {}).get("versionCode") != int(sys.argv[2]) or
         file.get("sha256") != digest or file.get("name") != "/" + apk.name):

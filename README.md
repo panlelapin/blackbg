@@ -20,7 +20,7 @@ défiler les choix. Si le sélecteur du téléphone ne liste pas les application
 tierces, ouvrir l’aperçu via ADB :
 
 ```sh
-adb shell am start -a android.intent.action.SET_WALLPAPER -p app.blackbg
+adb shell am start -a android.intent.action.SET_WALLPAPER -p com.github.panlelapin.blackbg
 ```
 
 Pour publier une mise à jour : [Publier le dépôt F-Droid](fdroid/README.md).
@@ -63,7 +63,7 @@ Si une ancienne version du script a créé **votre clé personnelle** dans
 `~/.android/blackbg-release/`, migrez-la **avant** le premier `--personal` :
 avec `umask 077`, créez `~/.android/blackbg-personal/` et copiez-y les deux
 fichiers personnels, sans écraser de clé existante. Les deux modes conservent
-l’identifiant `app.blackbg` : Android accepte une mise à jour avec la même clé,
+l’identifiant `com.github.panlelapin.blackbg` : Android accepte une mise à jour avec la même clé,
 mais exige de désinstaller l’application avant de passer à une autre signature.
 
 Pour vérifier les dépendances résolues, définir `JAVA_HOME` et `ANDROID_HOME`,

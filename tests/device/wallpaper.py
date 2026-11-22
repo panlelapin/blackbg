@@ -35,12 +35,12 @@ def input_window():
                         r"Tracks:(?:\s+Track #\d+\s+active=null)*", tracks):
         return None, f"WM transitions: {tracks}"
     windows = sh("dumpsys input | sed -n '/^  FocusedWindows:/,+1p; /: name=.*blackbg.*inputConfig=/p'")
-    focus = re.search(r"displayId=0, name='(\w+ app\.blackbg/app\.blackbg\.Preview)'", windows)
+    focus = re.search(r"displayId=0, name='(\w+ com\.github\.panlelapin\.blackbg/com\.github\.panlelapin\.blackbg\.Preview)'", windows)
     # InputDispatcher lists layers front-to-back. A sink behind Preview is normal.
     for line in windows.splitlines():
         if "displayId=0, inputConfig=" not in line or "touchableRegion=<empty>" in line or "NOT_TOUCHABLE" in line:
             continue
-        if "ActivityRecordInputSink app.blackbg/.Preview," in line:
+        if "ActivityRecordInputSink com.github.panlelapin.blackbg/.Preview," in line:
             break
         if focus and f"name={focus[1]}," in line and "NO_INPUT_CHANNEL" not in line and "DROP_INPUT" not in line:
             return line, windows
@@ -58,7 +58,7 @@ def preview_ui(description, condition):
             path = "/data/local/tmp/blackbg-ui.xml"
             xml = sh(f"rm -f {path}; uiautomator dump {path} >/dev/null && cat {path}")
             root = ET.fromstring(xml).find("node")
-            if root is not None and root.get("package") == "app.blackbg" and condition(root):
+            if root is not None and root.get("package") == "com.github.panlelapin.blackbg" and condition(root):
                 # A wallpaper-colors config change can relaunch Preview while the
                 # hierarchy is being dumped. Re-observe it before injecting any input.
                 after, last = input_window()
@@ -122,7 +122,7 @@ def tap(label, follow=""):
 
 class Picker(unittest.TestCase):
     def setUp(self):
-        sh("am force-stop app.blackbg; am force-stop audit.check; wm user-rotation lock 0")
+        sh("am force-stop com.github.panlelapin.blackbg; am force-stop audit.check; wm user-rotation lock 0")
         sh("input keyevent KEYCODE_WAKEUP; wm dismiss-keyguard")
         self.addCleanup(sh, "wm size reset; wm density reset; wm user-rotation free")
 

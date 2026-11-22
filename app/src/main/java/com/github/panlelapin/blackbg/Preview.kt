@@ -1,4 +1,4 @@
-package app.blackbg
+package com.github.panlelapin.blackbg
 
 import android.app.Activity
 import android.app.WallpaperManager
