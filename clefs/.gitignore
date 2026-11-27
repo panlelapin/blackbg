@@ -1,0 +1,9 @@
+*
+!/.gitignore
+!/coffre.py
+!/discussions.tar.gz.age
+!/release.tar.gz.age
+!/paire/
+!/paire/howto.md
+!/paire/paire.tar.gz.age
+!/paire/publique.txt
